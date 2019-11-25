@@ -1,0 +1,17 @@
+{
+  "apiInfos": {
+    "title": "Navis API",
+    "version": "{{VERSION}}",
+    "description": "Api to manage Navis backend",
+    "contactEmail": "florian.charpentier67@gmail.com",
+    "license": "WTFPL",
+    "licenseUrl": "http://wtfpl.net"
+  },
+  "apiServer": {
+    "host": "localhost",
+    "port": "8080",
+    "readTimeout": "15",
+    "writeTimeout": "15",
+    "idleTimeout": "60"
+  }
+}
