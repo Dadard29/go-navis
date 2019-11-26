@@ -3,14 +3,15 @@ package main
 import (
 	"github.com/Dadard29/go-common/log"
 	"github.com/Dadard29/go-common/utils"
-	"github.com/Dadard29/go-navis/client"
 	"github.com/Dadard29/go-navis/host"
+	"github.com/Dadard29/go-navis/internal_cli"
 	"github.com/urfave/cli"
 	"os"
 )
 var logger = log.GetLogger("Navis", log.DEBUG)
 
 func main() {
+
 	app := cli.NewApp()
 	app.Name = "go-navis"
 	app.EnableBashCompletion = true
@@ -26,7 +27,7 @@ func main() {
 			Aliases:     []string{"c"},
 			Usage:       "use it to connect to a game",
 			Description: "Connect to a game hosted elsewhere",
-			Action: client.StartClient,
+			Action: internal_cli.StartClientCli,
 		},
 	}
 
