@@ -18,7 +18,7 @@ import (
 	"time"
 )
 
-var logger = log.GetLogger("Navis Host", log.DEBUG)
+var logger = log.GetLogger("Navis Host", log.DEBUG, 0)
 
 func getLocalIpAddress() string {
 	ifaces, err := net.Interfaces()
@@ -44,7 +44,7 @@ func StartHost(c *cli.Context) error {
 	logger.Info("starting host...")
 
 	apiService := GetHost()
-	go apiService.RunServerSynchronous()
+	apiService.RunServerAsynchronous()
 
 	// init the access hash
 	logger.Info("generating access token...")

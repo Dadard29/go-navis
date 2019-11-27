@@ -1,17 +1,19 @@
 package internal_cli
 
 import (
+	"errors"
 	"fmt"
 	"github.com/Dadard29/go-navis/client"
+	"github.com/Dadard29/go-navis/common"
 )
 
 
-func ping(c *client.Connector) (string, error) {
-	if c == nil {
-		return CONNECTION_INFOS_NOT_SET, nil
+func ping(c **client.Connector) (string, error) {
+	if *c == nil {
+		return "", errors.New(CONNECTION_INFOS_NOT_SET)
 	}
 
-	if c.TestConnection() {
+	if (*c).TestConnection() {
 		return CONNECTED, nil
 	} else {
 		return NOT_CONNECTED, nil
@@ -19,12 +21,29 @@ func ping(c *client.Connector) (string, error) {
 }
 
 func connect(c **client.Connector) (string, error) {
-	var err error
-	*c, err = client.ConnectorNew(false, "")
-	if err != nil {
-		return FAILED_TO_CONNECT, err
+	*c = client.ConnectorNew(false, "")
+	if c == nil {
+		return "", errors.New(common.FAILED_TO_CONNECT)
 	}
-	return ping(*c)
+	return ping(c)
+}
+
+func disconnect(c **client.Connector) (string, error) {
+	*c = nil
+	return DISCONNECTED, nil
+}
+
+func register(c **client.Connector) (string, error) {
+	if *c == nil {
+		return "", errors.New(CONNECTION_INFOS_NOT_SET)
+	}
+
+	err := (*c).Register()
+	if err != nil {
+		return "", errors.New(common.FAILED_TO_REGISTER)
+	}
+
+	return "ok", nil
 }
 
 func help() (string, error) {
@@ -32,19 +51,25 @@ func help() (string, error) {
 		"\t%s: exit the CLI\n" +
 		"\t%s: ping the game server\n" +
 		"\t%s: connect to a game server\n" +
+		"\t%s: disconnect" +
+		"\t%s: register to the game server with the access token\n" +
 		"\t%s: show this help",
-		QUIT, PING, CONNECT, HELP,
+		QUIT, PING, CONNECT, REGISTER, DISCONNECT, HELP,
 	), nil
 }
 
-func ProcessInput(input string, c *client.Connector) (string, error) {
+func ProcessInput(input string, c **client.Connector) (string, error) {
 	if input == PING {
 		return ping(c)
 	} else if input == CONNECT {
-		return connect(&c)
+		return connect(c)
+	} else if input == DISCONNECT {
+		return disconnect(c)
+	} else if input == REGISTER {
+		return register(c)
 	} else if input == HELP {
 		return help()
 	}
 
-	return UNKNOWN_COMMAND, nil
+	return "", errors.New(UNKNOWN_COMMAND)
 }

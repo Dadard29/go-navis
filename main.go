@@ -8,7 +8,7 @@ import (
 	"github.com/urfave/cli"
 	"os"
 )
-var logger = log.GetLogger("Navis", log.DEBUG)
+var logger = log.GetLogger("Navis", log.DEBUG, 0)
 
 func main() {
 

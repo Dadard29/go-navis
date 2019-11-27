@@ -8,7 +8,7 @@
     "licenseUrl": "http://wtfpl.net"
   },
   "apiServer": {
-    "host": "localhost",
+    "host": "0.0.0.0",
     "port": "8080",
     "readTimeout": "15",
     "writeTimeout": "15",
