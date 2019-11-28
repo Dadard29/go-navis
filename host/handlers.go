@@ -19,3 +19,7 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 	err := api.EncodeAndWriteResponse(w, true, "health check performed", content)
 	utils.CheckErr(err, api.Logger)
 }
+
+func registerHandler(w http.ResponseWriter, r *http.Request) {
+
+}

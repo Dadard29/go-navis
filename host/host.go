@@ -9,8 +9,10 @@ import (
 	"github.com/Dadard29/go-common/config"
 	"github.com/Dadard29/go-common/log"
 	"github.com/Dadard29/go-common/utils"
+	"github.com/Dadard29/go-navis/client"
 	init_config "github.com/Dadard29/go-navis/config"
 	"github.com/Dadard29/go-navis/internal_cli"
+	"github.com/Dadard29/go-navis/player"
 	"github.com/urfave/cli"
 	"math/rand"
 	"net"
@@ -19,6 +21,8 @@ import (
 )
 
 var logger = log.GetLogger("Navis Host", log.DEBUG, 0)
+
+var playerList player.PlayerList
 
 func getLocalIpAddress() string {
 	ifaces, err := net.Interfaces()
@@ -38,7 +42,18 @@ func getLocalIpAddress() string {
 	return ""
 }
 
+func setAccessToken() string {
+	rand.Seed(time.Now().UnixNano())
+	key := string(rand.Intn(100))
+	hash := sha256.New()
+	hash.Write([]byte(key))
+
+	return base64.URLEncoding.EncodeToString(hash.Sum(nil))
+}
+
 func StartHost(c *cli.Context) error {
+	var err error
+
 	init_config.InitConfigLogger()
 
 	logger.Info("starting host...")
@@ -46,14 +61,10 @@ func StartHost(c *cli.Context) error {
 	apiService := GetHost()
 	apiService.RunServerAsynchronous()
 
-	// init the access hash
+	// init the access token
 	logger.Info("generating access token...")
-	rand.Seed(time.Now().UnixNano())
-	key := string(rand.Intn(100))
-	hash := sha256.New()
-	hash.Write([]byte(key))
+	token := setAccessToken()
 
-	token := base64.URLEncoding.EncodeToString(hash.Sum(nil))
 	port := config.Config.CnfFile.GetValue("apiServer", "port")
 	ip := getLocalIpAddress()
 
@@ -61,11 +72,12 @@ func StartHost(c *cli.Context) error {
 	logger.Info(connectInfosLog)
 	logger.Info("Send these information to the others players so they can connect")
 
-
-	internal_cli.StartCli(true, token)
+	// start the CLI with a connector already connected to the started server
+	connector := client.ConnectorNewAsHost(token)
+	internal_cli.StartCli(connector)
 
 	logger.Debug("Closing the host...")
-	err := apiService.Srv.Shutdown(apiService.Context)
+	err = apiService.Srv.Shutdown(apiService.Context)
 	if err != nil {
 		return err
 	}
@@ -78,6 +90,7 @@ func GetHost() *api.Api {
 	api.Logger.Info("Registering routes...")
 	routes := map[string]func (w http.ResponseWriter, r *http.Request){
 		"/health": healthHandler,
+		"/register": registerHandler,
 	}
 
 	for i, _ := range routes {

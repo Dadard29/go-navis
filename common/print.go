@@ -1,6 +1,8 @@
 package common
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func PrintResponse(output string) {
 	fmt.Println("[+] " + output)

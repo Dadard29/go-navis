@@ -14,58 +14,58 @@ import (
 
 var logger = log.GetLogger("Navis client", log.DEBUG, 0)
 
-func getConnectorParameter(isHost bool, host *string, portInput *string, token *string) {
-	c := config.Config.CnfFile.GetMap("apiServer")
-
-	if isHost {
-		*host = c["host"]
-		*portInput = c["port"]
-	} else {
-		*host = utils.ReadlineNew("Enter IP address of the host:").GetInput()
-
-		portDefault := c["port"]
-		portPs1 := fmt.Sprintf("Enter the port (%s):", portDefault)
-		*portInput = utils.ReadlineNew(portPs1).GetInput()
-		if *portInput == "" {
-			*portInput = portDefault
-		}
-
-		*token = utils.ReadlineNew("Enter the access token:").GetInput()
-	}
-}
-
-func ConnectorNew(isHost bool, token string) *Connector {
-	var host string
-	var portInput string
-
-	getConnectorParameter(isHost, &host, &portInput, &token)
-
-	port, err := strconv.Atoi(portInput)
-	if err != nil {
-		logger.Error(err.Error())
-		return nil
-	}
-
-	connector := &Connector{
-		httpClient: &http.Client{},
-		host:       host,
-		port:       port,
-		token:      token,
-	}
-
-	if !connector.TestConnection() {
-		logger.Warning(common.FAILED_TO_CONNECT)
-		return nil
-	}
-
-	return connector
-}
-
 type Connector struct {
 	httpClient *http.Client
 	host string
 	port int
 	token string
+	username string
+}
+
+func ConnectorNewAsClient() *Connector {
+	conf := config.Config.CnfFile.GetMap("apiServer")
+
+	host := utils.ReadlineNew("Enter IP address of the host:").GetInput()
+
+	portDefault := conf["port"]
+	portPs1 := fmt.Sprintf("Enter the port (%s):", portDefault)
+	portInput := utils.ReadlineNew(portPs1).GetInput()
+	pPortInput := &portInput
+	if *pPortInput == "" {
+		*pPortInput = portDefault
+	}
+
+	port, err := strconv.Atoi(*pPortInput)
+	utils.CheckErr(err, logger)
+
+	token := utils.ReadlineNew("Enter the access token:").GetInput()
+
+	username, err := common.GetUsername()
+	utils.CheckErr(err, logger)
+
+	return ConnectorNew(host, port, token, username)
+}
+
+func ConnectorNewAsHost(token string) *Connector {
+	host := config.Config.CnfFile.GetValue("apiServer", "host")
+	portConfig := config.Config.CnfFile.GetValue("apiServer", "port")
+	port, err := strconv.Atoi(portConfig)
+	utils.CheckErr(err, logger)
+	username, err := common.GetUsername()
+	utils.CheckErr(err, logger)
+
+	return ConnectorNew(host, port, token, username)
+}
+
+func ConnectorNew(host string, port int, token string, username string) *Connector {
+
+	return &Connector{
+		httpClient: &http.Client{},
+		host:       host,
+		port:       port,
+		token:      token,
+		username: 	username,
+	}
 }
 
 func (c Connector) getUrl(route string) string {

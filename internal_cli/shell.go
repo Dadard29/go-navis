@@ -12,18 +12,11 @@ import (
 
 var logger = log.GetLogger("Navis CLI", log.DEBUG, 0)
 
-func StartCli(isHost bool, token string) {
+func StartCli(connector *client.Connector) {
+
 	r, err := readline.New("navis> ")
 	utils.CheckErr(err, logger)
 	defer r.Close()
-
-	connector := client.ConnectorNew(isHost, token)
-
-	if connector == nil {
-		common.PrintError(common.FAILED_TO_CONNECT)
-	} else {
-		common.PrintResponse(CONNECTED)
-	}
 
 	input, err := r.Readline()
 	utils.CheckErr(err, logger)
@@ -43,6 +36,7 @@ func StartCli(isHost bool, token string) {
 func StartClientCli(c *cli.Context) error {
 	initConfig.InitConfigLogger()
 
-	StartCli(false, "")
+	connector := client.ConnectorNewAsClient()
+	StartCli(connector)
 	return nil
 }

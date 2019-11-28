@@ -21,7 +21,7 @@ func ping(c **client.Connector) (string, error) {
 }
 
 func connect(c **client.Connector) (string, error) {
-	*c = client.ConnectorNew(false, "")
+	*c = client.ConnectorNewAsClient()
 	if c == nil {
 		return "", errors.New(common.FAILED_TO_CONNECT)
 	}
@@ -51,10 +51,10 @@ func help() (string, error) {
 		"\t%s: exit the CLI\n" +
 		"\t%s: ping the game server\n" +
 		"\t%s: connect to a game server\n" +
-		"\t%s: disconnect" +
+		"\t%s: disconnect from the game server\n" +
 		"\t%s: register to the game server with the access token\n" +
 		"\t%s: show this help",
-		QUIT, PING, CONNECT, REGISTER, DISCONNECT, HELP,
+		QUIT, PING, CONNECT, DISCONNECT, REGISTER, HELP,
 	), nil
 }
 
